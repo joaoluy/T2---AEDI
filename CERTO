@@ -14,62 +14,103 @@ no *inicializaFP(no *L){
     return L;
 }
 
-no *insereFP(no *L, int valor, int prior){
+no *insereFP(no *L, int valor, int prior)
+{
     no *N, *P, *ANT;
 
     N = new no;
     N->info = valor;
     N->prior = prior;
 
-    if (L == NULL || valor < L->info) {
-        N->link = L;
+    if (L == NULL) {
         L = N;
+        N->link = NULL;
     }
     else {
         P = L;
 
-        while ((P != NULL) && (valor > P->info)) {
+        while ((P != NULL) && (valor >= P->info)) {
             ANT = P;
             P = P->link;
         }
-        ANT->link = N;
-        N->link = P;
+        if (P == L) {
+            N->link = L;
+            L = N;
+        }
+        else {
+            ANT->link = N;
+            N->link = P;
+        }
     }
     return L;
 }
 
-no *removeFP(no *L, int *n, int * prior) {
-	no *AUX;
+no *removeFP(no *L, int *n, int *prior) {
+    no *AUX;
 
-	if (L != NULL) {
-		*n = L->info;
-		*prior = L->prior; 
-		AUX = L;
-		L = L->link;
-		delete AUX;
-	}
-	return L;
+    if (L != NULL) {
+        *n = L->info;
+        *prior = L->prior; 
+        AUX = L;
+        L = L->link;
+        delete AUX;
+    }
+    return L;
+}
+
+no *removePD(no *L, int *n, int *prior) {
+    no *AUX, *ANT;
+
+    for (int prioridade = 1; prioridade <= 3; prioridade++) {
+        AUX = L;
+        ANT = NULL;
+
+        // Procurar o primeiro nó com a prioridade atual
+        while (AUX != NULL && AUX->prior != prioridade) {
+            ANT = AUX;
+            AUX = AUX->link;
+        }
+
+        // Se encontrou um nó com a prioridade atual, remover da lista
+        if (AUX != NULL) {
+            *n = AUX->info;
+            *prior = AUX->prior;
+
+            if (ANT == NULL) {
+                L = AUX->link; // Se for o primeiro nó da lista
+            } else {
+                ANT->link = AUX->link; // Se não for o primeiro nó
+            }
+
+            delete AUX;
+            return L; // Retornar a lista atualizada após remover o voo
+        }
+    }
+
+    // Se não encontrou nenhum voo para remover
+    *n = -1; // Valor de n inválido para indicar que nenhum voo foi removido
+    *prior = -1; // Valor de prior inválido
+    return L;
 }
 
 int verificaSeVazia(no *L) {
-	if (L == NULL)
-		return 1;
-	else
-		return 0;
+    if (L == NULL)
+        return 1;
+    else
+        return 0;
 }
 
 void exibe(no *L){
     no *P = L;
     while (P != NULL) {
-		cout << endl << " Numero do Voo: " << P->info << " Prioridade do Voo: " << P->prior;
+        cout << endl << " Numero do Voo: " << P->info << " Prioridade do Voo: " << P->prior;
         P = P->link;
     }
-}//houve alteração
-
+}
 
 int main(){
     no *Voos, *PD;
-    int voos, prior[51], num[51], continua = 1, ut;
+    int prior[51], num[51], continua = 1, ut;
     int aux1, aux2;
     Voos = inicializaFP(Voos);
     PD = inicializaFP(PD);
@@ -77,47 +118,53 @@ int main(){
     unsigned seed = time(NULL);
     srand(seed);
 
+    // Inicialização dos voos com números sequenciais e prioridades aleatórias
     for(int i = 1; i <= 50; i++){
         num[i] = i;
-        prior[i] = rand() % 3 + 1;
+        prior[i] = rand() % 3 + 1; // Prioridade aleatória entre 1 e 3
         Voos = insereFP(Voos, num[i], prior[i]);
     }
     
-	for(ut=1; continua ; ut++){
-		
-		cout << endl << "**************************" << endl;
-		cout << endl << "***** UNIDADE DE TEMPO: "<< ut << "*****" << endl;
-		for (voos=1; voos<=3; voos++){
-		    for(int i = 1; i <= 3; i++){
-    			if (!verificaSeVazia(Voos)){
-				    Voos = removeFP(Voos, &aux1, &aux2);
-				    PD=insereFP(PD, aux1, aux2);
-			    }   
-		    }
-		}
-		cout << "FILA DE VOOS A SEREM ATENDIDOS: ";
-		exibe(PD);
-		
-		if ((ut%2)&&(continua)){
-			for (int i=1; i<=3;i++){
-				if (PD != NULL){
-					PD=removeFP(PD, &aux1, &aux2);
-					cout << endl << "PISTA " << i << " atendendo o voo " << aux1;
-				}
-				else{
-					cout << endl << "TODOS OS VOOS FORAM ATENDIDOS - FILA VAZIA";
-					continua = 0;
-				}
-			}
-			if (!verificaSeVazia(PD)){
-					cout << endl << "FILA DE VOOS A SEREM ATENDIDOS: ";
-			        exibe(PD);
-			}
-		}
-		else{
-			cout << endl << "PISTAS EM ATENDIMENTO";
-		}
-	}
+    for(ut = 1; continua; ut++) {
+        cout << endl << "**************************" << endl;
+        cout << endl << "***** UNIDADE DE TEMPO: " << ut << " *****" << endl;
 
-    exibe(Voos);
+        int voosTransferidos = 0;
+
+        // Transferir voos da fila Voos para a pista PD de acordo com a prioridade
+        while (voosTransferidos < 4) {
+            if (!verificaSeVazia(Voos)) {
+                Voos = removeFP(Voos, &aux1, &aux2);
+                PD = insereFP(PD, aux1, aux2);
+                voosTransferidos++;
+            } else {
+                break;
+            }
+        }
+
+        // Exibir voos na pista PD
+        cout << "FILA DE VOOS A SEREM ATENDIDOS: ";
+        exibe(PD);
+
+        // Atendimento dos voos na pista PD (até 3 voos por unidade de tempo)
+        if ((ut % 2) && (continua)){
+            for (int i = 1; i <= 3; i++){
+                if (PD != NULL){
+                    PD = removePD(PD, &aux1, &aux2);
+                    cout << endl << "PISTA " << i << " atendendo o voo " << aux1;
+                } else {
+                    cout << endl << "TODOS OS VOOS FORAM ATENDIDOS - FILA VAZIA";
+                    continua = 0;
+                }
+            }
+            // Exibir a fila de voos restante na pista PD
+            if (!verificaSeVazia(PD)){
+                cout << endl << "FILA DE VOOS A SEREM ATENDIDOS: ";
+                exibe(PD);
+            }
+        } else {
+            cout << endl << "PISTAS EM ATENDIMENTO";
+        }
+    }
+    return 0;
 }
