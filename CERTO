@@ -21,25 +21,19 @@ no *insereFP(no *L, int valor, int prior){
     N->info = valor;
     N->prior = prior;
 
-    if (L == NULL) {
+    if (L == NULL || valor < L->info) {
+        N->link = L;
         L = N;
-        N->link = NULL;
     }
     else {
         P = L;
 
-        while ((P != NULL) && (prior >= P->prior)) {
+        while ((P != NULL) && (valor > P->info)) {
             ANT = P;
             P = P->link;
         }
-        if (P == L) {
-            N->link = L;
-            L = N;
-        }
-        else {
-            ANT->link = N;
-            N->link = P;
-        }
+        ANT->link = N;
+        N->link = P;
     }
     return L;
 }
@@ -67,7 +61,7 @@ int verificaSeVazia(no *L) {
 void exibe(no *L){
     no *P = L;
     while (P != NULL) {
-		cout << endl << "Prioridade do Voo: " << P->prior << " Numero do Voo: " << P->info;
+		cout << endl << " Numero do Voo: " << P->info << " Prioridade do Voo: " << P->prior;
         P = P->link;
     }
 }//houve alteração
@@ -75,16 +69,17 @@ void exibe(no *L){
 
 int main(){
     no *Voos, *PD;
-    int voos, *prior, *num, continua = 1, ut;
+    int voos, prior[51], num[51], continua = 1, ut;
     int aux1, aux2;
     Voos = inicializaFP(Voos);
+    PD = inicializaFP(PD);
     
     unsigned seed = time(NULL);
     srand(seed);
 
     for(int i = 1; i <= 50; i++){
         num[i] = i;
-        prior[i] = rand() % 4;
+        prior[i] = rand() % 3 + 1;
         Voos = insereFP(Voos, num[i], prior[i]);
     }
     
@@ -93,7 +88,7 @@ int main(){
 		cout << endl << "**************************" << endl;
 		cout << endl << "***** UNIDADE DE TEMPO: "<< ut << "*****" << endl;
 		for (voos=1; voos<=3; voos++){
-		    for(int i = 0; i<50; i++){
+		    for(int i = 1; i <= 3; i++){
     			if (!verificaSeVazia(Voos)){
 				    Voos = removeFP(Voos, &aux1, &aux2);
 				    PD=insereFP(PD, aux1, aux2);
@@ -107,14 +102,14 @@ int main(){
 			for (int i=1; i<=3;i++){
 				if (PD != NULL){
 					PD=removeFP(PD, &aux1, &aux2);
-					cout << endl << "PISTA " << i << " atendendo o voo " << data;
+					cout << endl << "PISTA " << i << " atendendo o voo " << aux1;
 				}
 				else{
 					cout << endl << "TODOS OS VOOS FORAM ATENDIDOS - FILA VAZIA";
 					continua = 0;
 				}
 			}
-			if (!verificaSeVazia(FP)){
+			if (!verificaSeVazia(PD)){
 					cout << endl << "FILA DE VOOS A SEREM ATENDIDOS: ";
 			        exibe(PD);
 			}
