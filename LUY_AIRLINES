@@ -1,0 +1,287 @@
+#include <iostream>
+#include <ctime>
+#include <windows.h>
+
+using namespace std;
+
+struct no {
+    int info;
+    int prior;
+    no *link;
+};
+
+no *inicializaFP(no *L){
+    L = NULL;
+    return L;
+}
+
+no *insereFP(no *L, int valor, int prior)
+{
+    no *N, *P, *ANT;
+
+    N = new no;
+    N->info = valor;
+    N->prior = prior;
+
+    if (L == NULL) {
+        L = N;
+        N->link = NULL;
+    }
+    else {
+        P = L;
+
+        while ((P != NULL) && (valor >= P->info)) {
+            ANT = P;
+            P = P->link;
+        }
+        if (P == L) {
+            N->link = L;
+            L = N;
+        }
+        else {
+            ANT->link = N;
+            N->link = P;
+        }
+    }
+    return L;
+}
+
+no *removeFP(no *L, int *n, int *prior) {
+    no *AUX;
+
+    if (L != NULL) {
+        *n = L->info;
+        *prior = L->prior; 
+        AUX = L;
+        L = L->link;
+        delete AUX;
+    }
+    return L;
+}
+
+no *removePD(no *L, int *n, int *prior) {
+    no *AUX, *ANT;
+
+    for (int prioridade = 1; prioridade <= 3; prioridade++) {
+        AUX = L;
+        ANT = NULL;
+
+        while (AUX != NULL && AUX->prior != prioridade) {
+            ANT = AUX;
+            AUX = AUX->link;
+        }
+
+        if (AUX != NULL) {
+            *n = AUX->info;
+            *prior = AUX->prior;
+
+            if (ANT == NULL) {
+                L = AUX->link;
+            } else {
+                ANT->link = AUX->link;
+            }
+
+            delete AUX;
+            return L;
+        }
+    }
+
+    *n = -1;
+    *prior = -1;
+    return L;
+}
+
+int verificaSeVazia(no *L) {
+    if (L == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+void exibe(no *L){
+    no *P = L;
+    while (P != NULL) {
+        cout << endl << " Numero do Voo: " << P->info << " Prioridade do Voo: " << P->prior;
+        if(P->prior == 1){
+            cout << " (Pouso forcado)";
+        }else if(P->prior == 2){
+            cout << " (Pouso normal)";
+        }else{
+            cout << " (Decolagem)";
+        }
+        P = P->link;
+    }
+}
+
+void aviao(){
+
+    Sleep(1000);
+    system("cls");
+        cout << R"(
+         -=\\`\\
+     |\\ ___\\_\\__
+   -=\\c`""""""" "`)
+      `~~~~~// //~~`
+        -==// //
+          '-'
+
+          _  _
+         ( `   )_
+        (    )    `)
+      (_   (_ .  _) _)
+                                     _
+                                    (  )
+     _ .                         ( `  ) . )
+   (  _ )_                      (_, _(  ,_)_)
+ (_  _(_ ,)"
+ << endl;
+    Sleep(1000);
+    system("cls");
+
+    cout << R"(
+                 -=\\`\\
+             |\\ ___\\_\\__
+           -=\\c`""""""" "`)
+              `~~~~~// //~~`
+                -==// //
+              '-'
+
+          _  _
+         ( `   )_
+        (    )    `)
+      (_   (_ .  _) _)
+                                 _
+                                (  )
+                             ( `  ) . )
+                            (_, _(  ,_)_)"
+ << endl;
+
+    Sleep(1000);
+    system("cls");
+
+    cout << R"(
+                 -=\\`\\
+             |\\ ___\\_\\__
+           -=\\c`""""""" "`)
+              `~~~~~// //~~`
+                -==// //
+              '-'
+
+     _  _                       _ .
+    ( `   )_                 (  _ )_
+   (    )    `)            (_  _(_ ,)
+ (_   (_ .  _) _)                 
+                            _
+                           (  )
+                        ( `  ) . )
+                       (_, _(  ,_)_)
+ )"<< endl;
+
+    Sleep(1000);
+    system("cls");
+
+    cout << R"(
+                 -=\\`\\
+             |\\ ___\\_\\__
+           -=\\c`""""""" "`)
+              `~~~~~// //~~`
+                -==// //
+              '-'
+
+          _  _
+         ( `   )_
+        (    )    `)
+      (_   (_ .  _) _)
+                                 _
+                                (  )
+                             ( `  ) . )
+                            (_, _(  ,_)_)"
+ << endl;
+}
+
+int menu(){
+    int tecla;
+
+    for(int i = 0; i<3 ; i++){
+        aviao();
+    }
+
+    cout << "BEM VINDO AO SIMULADOR DE VOO LUY AIRLINES" << endl;
+    cout << "1. SIMULAR" << endl;
+    cout << "2. SAIR" << endl;
+    cin >> tecla;
+    return tecla;
+}
+
+int main(){
+    no *Voos, *PD;
+    int prior[51], num[51], continua = 1, ut;
+    int aux1, aux2, tecla;
+    Voos = inicializaFP(Voos);
+    PD = inicializaFP(PD);
+    
+    unsigned seed = time(NULL);
+    srand(seed);
+
+    tecla = menu();
+
+    if(tecla == 2){
+        return 0;
+    }else {
+
+        for(int i = 1; i <= 50; i++){
+            num[i] = i;
+            prior[i] = rand() % 3 + 1;
+            Voos = insereFP(Voos, num[i], prior[i]);
+        }
+    
+        for(ut = 1; continua; ut++) {
+            cout << endl;
+            cout << endl << "----- UNIDADE DE TEMPO: " << ut << " -----" << endl;
+
+            int voosTransferidos = 0;
+
+            while (voosTransferidos < 4) {
+                if (!verificaSeVazia(Voos)) {
+                    Voos = removeFP(Voos, &aux1, &aux2);
+                    PD = insereFP(PD, aux1, aux2);
+                    voosTransferidos++;
+                } else {
+                    break;
+                }
+            }
+
+            cout << "FILA DE VOOS A SEREM ATENDIDOS: ";
+            exibe(PD);
+
+            if ((ut % 2) && (continua)){
+                for (int i = 1; i <= 3; i++){
+                    if (PD != NULL){
+                        PD = removePD(PD, &aux1, &aux2);
+                        if(aux2 == 1){
+                            cout << endl << "PISTA " << i << " atendendo o voo " << aux1 << " (Pouso forcado)";
+                        }else if(aux2 == 2){
+                            cout << endl << "PISTA " << i << " atendendo o voo " << aux1 << " (Pouso normal)";
+                        }else if(aux2 == 3){
+                            cout << endl << "PISTA " << i << " atendendo o voo " << aux1 << " (Decolagem)";
+                        }
+                    } else {
+                        cout << endl << "TODOS OS VOOS FORAM ATENDIDOS - FILA VAZIA";
+                        continua = 0;
+                    }
+                }
+                if (!verificaSeVazia(PD)){
+                    cout << endl << "FILA DE VOOS A SEREM ATENDIDOS: ";
+                    exibe(PD);
+                }
+            } else {
+                cout << endl << "PISTAS EM ATENDIMENTO";
+            }
+        }
+
+        cout << endl << endl << "A SIMULACAO ACABOU" << endl << endl;
+        tecla = 2;
+    }
+
+    return 0;
+}
