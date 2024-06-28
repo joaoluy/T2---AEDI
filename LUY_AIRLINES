@@ -234,7 +234,10 @@ int main(){
             prior[i] = rand() % 3 + 1;
             Voos = insereFP(Voos, num[i], prior[i]);
         }
-    
+
+        cout << "Voos programados: " << endl;
+        exibe(Voos);
+        cout << endl;
         for(ut = 1; continua; ut++) {
             cout << endl;
             cout << endl << "----- UNIDADE DE TEMPO: " << ut << " -----" << endl;
